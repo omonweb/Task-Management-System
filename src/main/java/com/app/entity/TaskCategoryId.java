@@ -1,37 +1,25 @@
 package com.app.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
+import jakarta.persistence.*;
 import java.io.Serializable;
-import java.util.Objects;
 
 @Embeddable
-@Getter
-@Setter
-@NoArgsConstructor
 public class TaskCategoryId implements Serializable {
 
-    @Column(name = "TaskID")
-    private Integer taskId;
+    private int taskId;
+    private int categoryId;
 
-    @Column(name = "CategoryID")
-    private Integer categoryId;
+    public TaskCategoryId() {}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TaskCategoryId)) return false;
-        TaskCategoryId that = (TaskCategoryId) o;
-        return Objects.equals(taskId, that.taskId) &&
-                Objects.equals(categoryId, that.categoryId);
+    public TaskCategoryId(int taskId, int categoryId) {
+        this.taskId = taskId;
+        this.categoryId = categoryId;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(taskId, categoryId);
-    }
+    // getters & setters
+    public int getTaskId() { return taskId; }
+    public void setTaskId(int taskId) { this.taskId = taskId; }
+
+    public int getCategoryId() { return categoryId; }
+    public void setCategoryId(int categoryId) { this.categoryId = categoryId; }
 }
