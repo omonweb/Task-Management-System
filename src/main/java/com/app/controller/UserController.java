@@ -1,8 +1,11 @@
 package com.app.controller;
 
+import com.app.dto.UserDTO;
 import com.app.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
@@ -10,4 +13,12 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+
+    @GetMapping
+    public List<UserDTO> getUsers(
+            @RequestParam(required = false) String role,
+            @RequestParam(required = false) String username
+    ) {
+        return userService.getUsersFiltered(role, username);
+    }
 }
