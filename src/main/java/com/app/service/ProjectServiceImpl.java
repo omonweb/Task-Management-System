@@ -2,10 +2,10 @@ package com.app.service;
 
 import com.app.dto.ProjectDTO;
 import com.app.entity.Project;
+import com.app.exception.ResourceNotFoundException;
 import com.app.repository.ProjectRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,18 +19,27 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public List<ProjectDTO> getAllProjects(LocalDate startDate, LocalDate endDate) {
 
-        // Step 1 - get projects from database
         List<Project> projects;
 
         if (startDate != null && endDate != null) {
-            // filter by date if dates are given
+
+            // Exception: endDate must be after startDate
+            if (endDate.isBefore(startDate)) {
+                throw new IllegalArgumentException("endDate must be after startDate");
+            }
+
             projects = projectRepository.findByStartDateBetween(startDate, endDate);
+
         } else {
-            // otherwise get all projects
             projects = projectRepository.findAll();
         }
 
-        // Step 2 - convert to DTO
+        // Exception: no projects found
+        if (projects.isEmpty()) {
+            throw new ResourceNotFoundException("No projects found");
+        }
+
+        // Convert to DTO
         List<ProjectDTO> result = new ArrayList<>();
 
         for (Project p : projects) {
@@ -40,11 +49,11 @@ public class ProjectServiceImpl implements ProjectService {
             dto.setStartDate(p.getStartDate());
             dto.setEndDate(p.getEndDate());
 
-            // get owner name safely
+            // Handle project with no owner
             if (p.getUser() != null) {
                 dto.setOwnerName(p.getUser().getFullName());
             } else {
-                dto.setOwnerName("No Owner");
+                dto.setOwnerName("No Owner Assigned");
             }
 
             result.add(dto);
