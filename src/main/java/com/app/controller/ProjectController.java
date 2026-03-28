@@ -4,8 +4,8 @@ import com.app.dto.ProjectDTO;
 import com.app.service.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -17,11 +17,12 @@ public class ProjectController {
     private ProjectService projectService;
 
     @GetMapping
-    public List<ProjectDTO> getAllProjects(
+    public ResponseEntity<List<ProjectDTO>> getAllProjects(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate
     ) {
-        return projectService.getAllProjects(startDate, endDate);
+        List<ProjectDTO> projects = projectService.getAllProjects(startDate, endDate);
+        return ResponseEntity.ok(projects);
     }
 
 }
