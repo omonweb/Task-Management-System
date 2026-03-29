@@ -16,8 +16,8 @@ public class CategoryController {
     }
 
     // GET /api/categories/{id}/task-summary
-    @GetMapping("/{id}/task-summary")
-    public ResponseEntity<CategoryDTO> getCategoryTaskSummary(@PathVariable Integer id) {
+    @GetMapping("/task-summary")
+    public ResponseEntity<CategoryDTO> getCategoryTaskSummary(@RequestParam Integer id) {
         CategoryDTO summary = categoryService.getCategoryWithTaskCounts(id);
         return ResponseEntity.ok(summary);
     }
