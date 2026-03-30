@@ -4,17 +4,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiError> handleNotFound(ResourceNotFoundException ex) {
         return new ResponseEntity<>(
-
                 new ApiError(ex.getMessage(), HttpStatus.NOT_FOUND.value()),
                 HttpStatus.NOT_FOUND
+        );
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiError> handleBadRequest(IllegalArgumentException ex) {
+        return new ResponseEntity<>(
+                new ApiError(ex.getMessage(), HttpStatus.BAD_REQUEST.value()),
+                HttpStatus.BAD_REQUEST
         );
     }
 
