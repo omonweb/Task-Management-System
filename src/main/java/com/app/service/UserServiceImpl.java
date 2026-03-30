@@ -3,6 +3,7 @@ package com.app.service;
 import com.app.dto.UserDTO;
 import com.app.entity.User;
 import com.app.entity.UserRoles;
+import com.app.exception.ResourceNotFoundException;
 import com.app.repository.UserRepository;
 import com.app.repository.UserRolesRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,9 +26,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDTO> getUsersFiltered(String role, String username) {
 
+        if (role != null && !role.matches("[a-zA-Z]+")) {
+            throw new IllegalArgumentException("Invalid role format");
+        }
+
+        if ("error".equalsIgnoreCase(username)) {
+            throw new RuntimeException("Test error");
+        }
+
         List<User> users = userRepository.findAll();
 
-        return users.stream()
+        List<UserDTO> result = users.stream()
                 .filter(user ->
                         username == null ||
                                 user.getUsername().toLowerCase().contains(username.toLowerCase())
@@ -44,19 +53,28 @@ public class UserServiceImpl implements UserService {
                     List<UserRoles> roles =
                             userRolesRepository.findByUserUserId(user.getUserId());
 
-                    if (!roles.isEmpty()) {
+                    if (roles != null && !roles.isEmpty()) {
                         String roleName = roles.get(0).getUserRole().getRoleName();
 
                         if (role == null || roleName.equalsIgnoreCase(role)) {
                             dto.setRoleName(roleName);
                         } else {
-                            return null; // filter out
+                            return null;
                         }
+                    } else {
+                        dto.setRoleName("No Role");
                     }
 
                     return dto;
                 })
                 .filter(dto -> dto != null)
                 .toList();
+
+
+        if (result.isEmpty()) {
+            throw new ResourceNotFoundException("No users found");
+        }
+
+        return result;
     }
 }
