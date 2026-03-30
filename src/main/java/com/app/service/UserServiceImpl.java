@@ -53,22 +53,18 @@ public class UserServiceImpl implements UserService {
                     List<UserRoles> roles =
                             userRolesRepository.findByUserUserId(user.getUserId());
 
+                    if (roles != null && !roles.isEmpty()) {
+                        String roleName = roles.get(0).getUserRole().getRoleName();
 
-                    if (roles == null || roles.isEmpty()) {
-                        if (role != null) {
+                        if (role == null || roleName.equalsIgnoreCase(role)) {
+                            dto.setRoleName(roleName);
+                        } else {
                             return null;
                         }
+                    } else {
                         dto.setRoleName("No Role");
-                        return dto;
                     }
 
-                    String roleName = roles.get(0).getUserRole().getRoleName();
-
-                    if (role != null && !roleName.equalsIgnoreCase(role)) {
-                        return null;
-                    }
-
-                    dto.setRoleName(roleName);
                     return dto;
                 })
                 .filter(dto -> dto != null)
