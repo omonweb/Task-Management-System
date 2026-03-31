@@ -7,6 +7,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/tasks")
 @RequiredArgsConstructor
@@ -14,7 +17,7 @@ public class TaskController {
 
     private final TaskService taskService;
 
-    // Notice the path is just /api/tasks now
+    // the path is just /api/tasks now
     @GetMapping
     public ResponseEntity<Page<TaskDTO>> getTasks(
             @RequestParam(required = false) String priority,
