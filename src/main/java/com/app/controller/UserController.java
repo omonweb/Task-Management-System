@@ -1,6 +1,7 @@
 package com.app.controller;
 
 import com.app.dto.UserDTO;
+import com.app.dto.UserDetailsDTO;
 import com.app.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -20,5 +21,10 @@ public class UserController {
             @RequestParam(required = false) String username
     ) {
         return userService.getUsersFiltered(role, username);
+    }
+
+    @GetMapping("/{id}/details")
+    public UserDetailsDTO getUserDetails(@PathVariable Integer id) {
+        return userService.getUserDetails(id);
     }
 }

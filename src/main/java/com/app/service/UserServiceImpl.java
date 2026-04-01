@@ -8,6 +8,11 @@ import com.app.repository.UserRepository;
 import com.app.repository.UserRolesRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.app.dto.UserDetailsDTO;
+import com.app.entity.Project;
+import com.app.entity.Task;
+import com.app.repository.ProjectRepository;
+import com.app.repository.TaskRepository;
 
 import java.util.List;
 
@@ -17,6 +22,8 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final UserRolesRepository userRolesRepository;
+    private final ProjectRepository projectRepository;
+    private final TaskRepository taskRepository;
 
     @Override
     public List<User> getAllUsers() {
@@ -76,5 +83,43 @@ public class UserServiceImpl implements UserService {
         }
 
         return result;
+    }
+
+    @Override
+    public UserDetailsDTO getUserDetails(Integer userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        List<Project> projects = projectRepository.findAll()
+                .stream()
+                .filter(p -> p.getUser() != null && p.getUser().getUserId().equals(userId))
+                .toList();
+
+        List<Task> tasks = taskRepository.findAll()
+                .stream()
+                .filter(t -> t.getUser() != null && t.getUser().getUserId().equals(userId))
+                .toList();
+
+        UserDetailsDTO dto = new UserDetailsDTO();
+
+        dto.setUserId(user.getUserId());
+        dto.setUsername(user.getUsername());
+        dto.setEmail(user.getEmail());
+        dto.setFullName(user.getFullName());
+
+        dto.setProjectNames(
+                projects.stream()
+                        .map(Project::getProjectName)
+                        .toList()
+        );
+
+        dto.setTaskNames(
+                tasks.stream()
+                        .map(Task::getTaskName)
+                        .toList()
+        );
+
+        return dto;
     }
 }
