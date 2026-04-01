@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "Task")
@@ -40,4 +41,8 @@ public class Task {
     @ManyToOne
     @JoinColumn(name = "UserID")
     private User user;
+
+    // NEW: Mapped the relationship to the bridging table to fetch categories
+    @OneToMany(mappedBy = "task", fetch = FetchType.LAZY)
+    private List<TaskCategory> taskCategories;
 }
