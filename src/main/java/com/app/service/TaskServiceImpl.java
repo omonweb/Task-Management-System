@@ -1,6 +1,7 @@
 package com.app.service;
 
 import com.app.dto.TaskDTO;
+import com.app.dto.TaskDetailsDTO;
 import com.app.entity.Task;
 import com.app.exception.ResourceNotFoundException;
 import com.app.repository.TaskRepository;
@@ -11,7 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +29,6 @@ public class TaskServiceImpl implements TaskService {
         boolean hasPriority = (priority != null && !priority.trim().isEmpty());
         boolean hasStatus = (status != null && !status.trim().isEmpty());
 
-        // Routing logic based on provided query parameters using if-else to allow for better readability and also improve performance.
         if (hasPriority && hasStatus) {
             taskPage = taskRepository.findByPriorityIgnoreCaseAndStatusIgnoreCase(priority, status, pageable);
         } else if (hasPriority) {
@@ -36,27 +36,50 @@ public class TaskServiceImpl implements TaskService {
         } else if (hasStatus) {
             taskPage = taskRepository.findByStatusIgnoreCase(status, pageable);
         } else {
-            // Neither provided -> Fetch all tasks
             taskPage = taskRepository.findAll(pageable);
         }
 
-        // Exception Handling: Page Out of Bounds
         if (page > 0 && page >= taskPage.getTotalPages() && taskPage.getTotalElements() > 0) {
             throw new ResourceNotFoundException("Page index out of bounds. Total pages available: " + taskPage.getTotalPages());
         }
 
-        // Map Entity to DTO using modelMapper!
         return taskPage.map(task -> {
             TaskDTO dto = modelMapper.map(task, TaskDTO.class);
-
             if (task.getProject() != null) {
                 dto.setProjectName(task.getProject().getProjectName());
             }
             if (task.getUser() != null) {
                 dto.setUserName(task.getUser().getUsername());
             }
-
             return dto;
         });
+    }
+
+    @Override
+    public TaskDetailsDTO getTaskById(Integer id) {
+        // 1. Fetch Task or throw 404
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found with ID: " + id));
+
+        // 2. Map core entity to DTO
+        TaskDetailsDTO dto = modelMapper.map(task, TaskDetailsDTO.class);
+
+        // 3. Map flattened relational fields (Project & User)
+        if (task.getProject() != null) {
+            dto.setProjectName(task.getProject().getProjectName());
+        }
+        if (task.getUser() != null) {
+            dto.setUserName(task.getUser().getUsername());
+        }
+
+        // 4. Extract and map the Category names from the TaskCategory join table
+        if (task.getTaskCategories() != null) {
+            List<String> categoryNames = task.getTaskCategories().stream()
+                    .map(tc -> tc.getCategory().getCategoryName())
+                    .toList();
+            dto.setCategories(categoryNames);
+        }
+
+        return dto;
     }
 }
