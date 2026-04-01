@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface TaskRepository extends JpaRepository<Task, Integer> {
 
@@ -21,4 +23,9 @@ public interface TaskRepository extends JpaRepository<Task, Integer> {
     // 4. (Implicitly inherited) findAll(Pageable pageable) for when neither is provided
 
     //countTaskByPriority()
+
+    // New methods for Project API 2
+    List<Task> findByProjectProjectId(Integer projectId);
+    List<Task> findByProjectProjectIdAndStatusIgnoreCase(Integer projectId, String status);
+
 }
