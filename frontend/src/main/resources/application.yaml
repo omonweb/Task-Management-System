@@ -1,6 +1,11 @@
-spring:
-  application:
-    name: Frontend
-
 server:
-  port: ${PORT:8081}
+  port: 8081 # Keeps this separate from your backend on 8080
+
+spring:
+  thymeleaf:
+    cache: false # Disables caching so you can refresh the browser to see HTML changes instantly
+
+# Custom property mapping to your backend
+backend:
+  api:
+    base-url: http://localhost:8080/api
