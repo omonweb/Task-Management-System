@@ -13,9 +13,17 @@ public class TaskClientService {
 
     private final RestClient restClient;
 
-    public PaginatedResponse<TaskDTO> fetchTasks(int page, int size) {
+    public PaginatedResponse<TaskDTO> fetchTasks(String priority, String status, int page, int size) {
         return restClient.get()
-                .uri("/tasks?page={page}&size={size}", page, size)
+                .uri(uriBuilder -> {
+                    uriBuilder.path("/tasks");
+                    // Only append the query parameter if the user selected a filter
+                    if (priority != null && !priority.isBlank()) uriBuilder.queryParam("priority", priority);
+                    if (status != null && !status.isBlank()) uriBuilder.queryParam("status", status);
+                    uriBuilder.queryParam("page", page);
+                    uriBuilder.queryParam("size", size);
+                    return uriBuilder.build();
+                })
                 .retrieve()
                 .body(new ParameterizedTypeReference<PaginatedResponse<TaskDTO>>() {});
     }
