@@ -69,6 +69,9 @@ public class UserServiceImpl implements UserService {
                             return null;
                         }
                     } else {
+                        if (role != null && !role.trim().isEmpty()) {
+                            return null;
+                        }
                         dto.setRoleName("No Role");
                     }
 
