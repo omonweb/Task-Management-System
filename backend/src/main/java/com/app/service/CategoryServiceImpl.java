@@ -49,6 +49,11 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public List<TaskDTO> getTasksByCategoryName(String categoryName) {
 
+        // If name is empty or blank
+        if (categoryName == null || categoryName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Category name cannot be empty");
+        }
+
         // find all task-category rows matching the name
         List<TaskCategory> taskCategories = taskCategoryRepository
                 .findByCategory_CategoryNameIgnoreCase(categoryName);

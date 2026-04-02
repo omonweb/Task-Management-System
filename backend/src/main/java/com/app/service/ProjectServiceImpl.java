@@ -1,9 +1,12 @@
 package com.app.service;
 
 import com.app.dto.ProjectDTO;
+import com.app.dto.TaskDTO;
 import com.app.entity.Project;
+import com.app.entity.Task;
 import com.app.exception.ResourceNotFoundException;
 import com.app.repository.ProjectRepository;
+import com.app.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
@@ -16,6 +19,10 @@ public class ProjectServiceImpl implements ProjectService {
     @Autowired
     private ProjectRepository projectRepository;
 
+    @Autowired
+    private TaskRepository taskRepository;
+
+    // API 1
     @Override
     public List<ProjectDTO> getAllProjects(LocalDate startDate, LocalDate endDate) {
 
@@ -56,6 +63,51 @@ public class ProjectServiceImpl implements ProjectService {
                 dto.setOwnerName("No Owner Assigned");
             }
 
+            result.add(dto);
+        }
+
+        return result;
+    }
+
+    // API 2
+    @Override
+    public List<TaskDTO> getTasksByProject(Integer projectId, String status) {
+
+        // check if project exists
+        projectRepository.findById(projectId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Project not found with id: " + projectId));
+
+        // get tasks - with or without status filter
+        List<Task> tasks;
+
+        if (status != null) {
+            tasks = taskRepository.findByProjectProjectIdAndStatusIgnoreCase(projectId, status);
+        } else {
+            tasks = taskRepository.findByProjectProjectId(projectId);
+        }
+
+        // if no tasks found
+        if (tasks.isEmpty()) {
+            throw new ResourceNotFoundException(
+                    "No tasks found for project id: " + projectId);
+        }
+
+        // convert to DTO
+        List<TaskDTO> result = new ArrayList<>();
+        for (Task t : tasks) {
+            TaskDTO dto = new TaskDTO();
+            dto.setTaskId(t.getTaskId());
+            dto.setTaskName(t.getTaskName());
+            dto.setStatus(t.getStatus());
+            dto.setPriority(t.getPriority());
+            dto.setDueDate(t.getDueDate());
+            if (t.getProject() != null) {
+                dto.setProjectName(t.getProject().getProjectName());
+            }
+            if (t.getUser() != null) {
+                dto.setUserName(t.getUser().getUsername());
+            }
             result.add(dto);
         }
 
