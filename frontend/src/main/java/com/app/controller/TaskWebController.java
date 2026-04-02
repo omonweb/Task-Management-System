@@ -17,19 +17,23 @@ public class TaskWebController {
 
     @GetMapping("/tasks")
     public String viewTasks(
+            @RequestParam(required = false) String priority,
+            @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             Model model) {
 
-        // Fetch data from backend API
-        PaginatedResponse<TaskDTO> response = taskClientService.fetchTasks(page, size);
+        PaginatedResponse<TaskDTO> response = taskClientService.fetchTasks(priority, status, page, size);
 
-        // Pass data to Thymeleaf template
         model.addAttribute("tasks", response.getContent());
         model.addAttribute("currentPage", response.getNumber());
         model.addAttribute("totalPages", response.getTotalPages());
         model.addAttribute("isFirst", response.isFirst());
         model.addAttribute("isLast", response.isLast());
+
+        // Pass the selected filters back to the view to maintain form state
+        model.addAttribute("selectedPriority", priority);
+        model.addAttribute("selectedStatus", status);
 
         return "tasks";
     }
