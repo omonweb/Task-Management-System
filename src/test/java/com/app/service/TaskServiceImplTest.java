@@ -1,8 +1,11 @@
 package com.app.service;
 
 import com.app.dto.TaskDTO;
+import com.app.dto.TaskDetailsDTO;
+import com.app.entity.Category;
 import com.app.entity.Project;
 import com.app.entity.Task;
+import com.app.entity.TaskCategory;
 import com.app.entity.User;
 import com.app.exception.ResourceNotFoundException;
 import com.app.repository.TaskRepository;
@@ -19,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -64,14 +68,14 @@ class TaskServiceImplTest {
         dummyTaskDTO.setStatus("Pending");
     }
 
-    // POSITIVE TEST
+    // --- TESTS FOR API 1: getTasks (Paginated & Filtered) ---
+
     @Test
     void getTasks_ShouldFilterByPriorityAndStatus() {
         // Arrange
         Pageable pageable = PageRequest.of(0, 10);
         Page<Task> taskPage = new PageImpl<>(List.of(dummyTask), pageable, 1);
 
-        // Mock the specific dual-filter repository method
         when(taskRepository.findByPriorityIgnoreCaseAndStatusIgnoreCase(anyString(), anyString(), any(Pageable.class)))
                 .thenReturn(taskPage);
         when(modelMapper.map(any(Task.class), eq(TaskDTO.class))).thenReturn(dummyTaskDTO);
@@ -85,15 +89,11 @@ class TaskServiceImplTest {
         assertEquals("High", result.getContent().get(0).getPriority());
         assertEquals("Pending", result.getContent().get(0).getStatus());
 
-        // Verify that the correct repository method was called exactly once
         verify(taskRepository, times(1))
                 .findByPriorityIgnoreCaseAndStatusIgnoreCase("High", "Pending", pageable);
-
-        // Ensure the default findAll was NEVER called (proving our routing logic works)
         verify(taskRepository, never()).findAll(any(Pageable.class));
     }
 
-    // NEGATIVE TEST
     @Test
     void getTasks_ShouldThrowException_WhenPageIsOutOfBounds() {
         // Arrange
@@ -101,22 +101,87 @@ class TaskServiceImplTest {
         int size = 10;
         Pageable pageable = PageRequest.of(requestedPage, size);
 
-        // We simulate the database having only 1 item total, meaning there is only 1 page (page 0).
         Page<Task> taskPage = new PageImpl<>(List.of(dummyTask), PageRequest.of(0, size), 1);
 
-        // We mock the default findAll method since null filters are passed in the Act step
         when(taskRepository.findAll(any(Pageable.class))).thenReturn(taskPage);
 
         // Act & Assert
-        // We assert that calling the method throws our expected ResourceNotFoundException
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
             taskService.getTasks(null, null, requestedPage, size);
         });
 
-        // Verify the exception message matches our implementation
         assertTrue(exception.getMessage().contains("Page index out of bounds"));
+        verify(modelMapper, never()).map(any(), any());
+    }
 
-        // Verify modelMapper was never called because the exception stopped the execution early
+    // --- TESTS FOR API 2: getTaskById (Deep Dive Details) ---
+
+    // POSITIVE TEST
+    @Test
+    void getTaskById_ShouldReturnTaskDetails_WhenTaskExists() {
+        // Arrange
+        Integer taskId = 1;
+
+        // 1. Create fake categories
+        Category cat1 = new Category();
+        cat1.setCategoryName("Development");
+        TaskCategory tc1 = new TaskCategory();
+        tc1.setCategory(cat1);
+
+        Category cat2 = new Category();
+        cat2.setCategoryName("Design");
+        TaskCategory tc2 = new TaskCategory();
+        tc2.setCategory(cat2);
+
+        // 2. Attach categories to our dummy task
+        dummyTask.setTaskCategories(List.of(tc1, tc2));
+
+        // 3. Create a fake mapped DTO
+        TaskDetailsDTO dummyDetailsDTO = new TaskDetailsDTO();
+        dummyDetailsDTO.setTaskId(taskId);
+        dummyDetailsDTO.setTaskName("Write Tests");
+
+        // 4. Mock the repository and mapper behaviors
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(dummyTask));
+        when(modelMapper.map(any(Task.class), eq(TaskDetailsDTO.class))).thenReturn(dummyDetailsDTO);
+
+        // Act
+        TaskDetailsDTO result = taskService.getTaskById(taskId);
+
+        // Assert
+        assertNotNull(result);
+
+        // Verify manual mappings worked
+        assertEquals("Alpha", result.getProjectName());
+        assertEquals("developer1", result.getUserName());
+
+        // Verify Category extraction logic worked
+        assertNotNull(result.getCategories());
+        assertEquals(2, result.getCategories().size());
+        assertTrue(result.getCategories().contains("Development"));
+        assertTrue(result.getCategories().contains("Design"));
+
+        verify(taskRepository, times(1)).findById(taskId);
+    }
+
+    // NEGATIVE TEST
+    @Test
+    void getTaskById_ShouldThrowException_WhenTaskNotFound() {
+        // Arrange
+        Integer nonExistentTaskId = 999;
+
+        // Mock the DB returning empty for this ID
+        when(taskRepository.findById(nonExistentTaskId)).thenReturn(Optional.empty());
+
+        // Act & Assert
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+            taskService.getTaskById(nonExistentTaskId);
+        });
+
+        assertEquals("Task not found with ID: 999", exception.getMessage());
+
+        // Verify we hit the database but NEVER hit the model mapper because it crashed exactly when it was supposed to
+        verify(taskRepository, times(1)).findById(nonExistentTaskId);
         verify(modelMapper, never()).map(any(), any());
     }
 }
