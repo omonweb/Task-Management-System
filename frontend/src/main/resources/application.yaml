@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: Frontend
+
+server:
+  port: ${PORT:8081}
