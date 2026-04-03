@@ -4,11 +4,8 @@
     <meta charset="UTF-8">
     <title>Task Manager | Notifications</title>
 
-    <!-- Fonts + Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-
-    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
@@ -40,7 +37,6 @@
             font-weight: 800;
         }
 
-        /* Table Styling */
         .table thead th {
             background-color: var(--table-header-bg);
             color: var(--text-muted-soft);
@@ -63,24 +59,20 @@
             background-color: #fcfdfe;
         }
 
-        /* User lookup form */
         .user-filter-form .form-control {
             max-width: 160px;
         }
 
-        /* Notification badge */
         .notif-count-badge {
             font-size: 0.8rem;
         }
 
-        /* Message cell FIXED */
         .notif-text-cell {
             max-width: 420px;
             word-wrap: break-word;
             white-space: normal;
         }
 
-        /* Avatar circle */
         .avatar-circle {
             width: 36px;
             height: 36px;
@@ -96,7 +88,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
 
-        /* Empty state */
         .empty-state {
             padding: 60px 0;
             color: #adb5bd;
@@ -106,14 +97,34 @@
             font-size: 3rem;
         }
 
-        /* Buttons */
-        .btn-primary {
-            background-color: #64748b;
-            border: none;
+        .error-alert {
+            background-color: #fff5f5;
+            border: 1px solid #fecdca;
+            border-left: 4px solid #f04438;
+            border-radius: 10px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .btn-primary:hover {
-            background-color: #4a5c9a;
+        .error-alert .error-icon {
+            font-size: 1.4rem;
+            color: #f04438;
+            flex-shrink: 0;
+        }
+
+        .error-alert .error-title {
+            font-weight: 700;
+            color: #b42318;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+
+        .error-alert .error-message {
+            color: #d92d20;
+            font-size: 0.88rem;
+            margin: 0;
         }
     </style>
 </head>
@@ -159,8 +170,17 @@
         </form>
     </div>
 
+    <!-- Error Alert -->
+    <div th:if="${error != null}" class="error-alert mb-4">
+        <i class="bi bi-exclamation-circle-fill error-icon"></i>
+        <div>
+            <div class="error-title">Invalid User ID</div>
+            <p class="error-message" th:text="${error}"></p>
+        </div>
+    </div>
+
     <!-- Table -->
-    <div th:if="${not #lists.isEmpty(notifications)}">
+    <div th:if="${error == null and not #lists.isEmpty(notifications)}">
         <table class="table align-middle">
             <thead>
             <tr>
@@ -197,8 +217,8 @@
         </table>
     </div>
 
-    <!-- Empty State -->
-    <div th:if="${#lists.isEmpty(notifications)}" class="text-center empty-state">
+    <!-- Empty State (valid user but no notifications) -->
+    <div th:if="${error == null and #lists.isEmpty(notifications)}" class="text-center empty-state">
         <div class="empty-icon">📭</div>
         <p class="mt-2 fs-5 fw-semibold">No notifications found</p>
         <p class="text-muted">User ID <strong th:text="${userId}"></strong> has no alerts yet.</p>

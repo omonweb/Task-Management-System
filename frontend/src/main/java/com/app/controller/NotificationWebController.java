@@ -16,20 +16,30 @@ public class NotificationWebController {
 
     private final NotificationClientService notificationClientService;
 
-    // Default userId=1 so the page works without manual input on first load.
-    // In a real app with login, this would come from the security context.
     @GetMapping("/notifications")
     public String viewNotifications(
             @RequestParam(defaultValue = "1") Integer userId,
             Model model) {
 
-        List<NotificationDTO> notifications =
-                notificationClientService.fetchNotificationsByUserId(userId);
+        try {
+            List<NotificationDTO> notifications =
+                    notificationClientService.fetchNotificationsByUserId(userId);
 
-        model.addAttribute("notifications", notifications);
+            model.addAttribute("notifications", notifications);
+            model.addAttribute("count", notifications.size());
+            model.addAttribute("error", null);
+
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("notifications", List.of());
+            model.addAttribute("count", 0);
+            model.addAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            model.addAttribute("notifications", List.of());
+            model.addAttribute("count", 0);
+            model.addAttribute("error", "Something went wrong. Please try again.");
+        }
+
         model.addAttribute("userId", userId);
-        model.addAttribute("count", notifications.size());
-
         return "notifications";
     }
 }
