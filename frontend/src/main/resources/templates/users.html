@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Task Manager | Users</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+
+    <style>
+        :root {
+            --page-bg: #f8f9fc;
+            --card-bg: #ffffff;
+            --table-header-bg: #eef2f7;
+        }
+
+        body {
+            background-color: var(--page-bg);
+            color: #4a4a4a;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .dashboard-container {
+            margin-top: 10px;
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            padding: 35px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .page-title {
+            color: #5c6b8c;
+            font-weight: 800;
+        }
+
+        .table thead th {
+            background-color: var(--table-header-bg);
+            color: #6b7a99;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.5px;
+            border-bottom: none;
+            padding: 15px;
+        }
+
+        .table tbody td {
+            padding: 15px;
+            vertical-align: middle;
+            color: #555;
+            border-bottom: 1px solid #f1f4f8;
+        }
+
+        .table tbody tr:hover {
+            background-color: #fcfdfe;
+        }
+
+        /* --- Badge Base Styling --- */
+        .custom-badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            display: inline-block;
+        }
+
+        /* --- Role Specific Colors --- */
+        .role-user {
+            background-color: #e3f2fd; /* Pastel Blue */
+            color: #1565c0;
+            border: 1px solid #bbdefb;
+        }
+
+        .role-manager {
+            background-color: #f3e5f5; /* Pastel Purple */
+            color: #7b1fa2;
+            border: 1px solid #e1bee7;
+        }
+
+        .role-pm {
+            background-color: #e0f2f1; /* Pastel Teal */
+            color: #00695c;
+            border: 1px solid #b2dfdb;
+        }
+
+        .role-csr {
+            background-color: #fff8e1; /* Pastel Yellow/Orange */
+            color: #f57f17;
+            border: 1px solid #ffecb3;
+        }
+
+        .role-doc {
+            background-color: #fce4ec; /* Pastel Pink */
+            color: #c2185b;
+            border: 1px solid #f8bbd0;
+        }
+
+        .role-none {
+            background-color: #f5f5f5; /* Light Grey */
+            color: #757575;
+            border: 1px solid #e0e0e0;
+        }
+
+        .role-default {
+            background-color: #f8f9fa; /* Fallback for any unknown roles */
+            color: #495057;
+            border: 1px solid #dee2e6;
+        }
+    </style>
+</head>
+<body>
+
+<div th:replace="~{fragments :: navbar(activePage='users')}"></div>
+
+<div class="container dashboard-container mb-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="page-title mb-0">
+            <i class="bi bi-people me-2"></i>User Directory
+        </h3>
+    </div>
+
+    <form method="get" action="/users" class="row g-3 mb-4 p-3 rounded-3" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
+
+        <div class="col-md-3">
+            <label class="form-label text-muted fw-bold small mb-1">Username</label>
+            <input type="text" name="username" class="form-control border-0 shadow-sm text-secondary"
+                   placeholder="Search username..." th:value="${selectedUsername}" />
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label text-muted fw-bold small mb-1">Role</label>
+            <input type="text" name="role" class="form-control border-0 shadow-sm text-secondary"
+                   placeholder="e.g. Admin, User" th:value="${selectedRole}" />
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn text-white w-100 shadow-sm" style="background-color: #64748b;">
+                <i class="bi bi-funnel me-1"></i> Filter
+            </button>
+        </div>
+
+        <div class="col-md-2 d-flex align-items-end">
+            <a href="/users" class="btn btn-white text-muted w-100 shadow-sm border" style="background-color: white;">Clear</a>
+        </div>
+
+    </form>
+
+    <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
+
+    <table class="table align-middle" th:if="${users != null and !users.isEmpty()}">
+        <thead>
+        <tr>
+            <th class="rounded-start">ID</th>
+            <th>Username</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th class="rounded-end">Role</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="user : ${users}">
+            <td class="text-muted fw-bold" th:text="'#' + ${user.userId}"></td>
+            <td class="fw-bold" style="color: #3b4863;">
+                <i class="bi bi-person-circle text-muted me-1" style="opacity: 0.5;"></i>
+                <span th:text="${user.username}"></span>
+            </td>
+            <td th:text="${user.fullName}"></td>
+            <td>
+                <i class="bi bi-envelope text-muted me-1" style="opacity: 0.5;"></i>
+                <span th:text="${user.email}"></span>
+            </td>
+            <td>
+                <span class="custom-badge shadow-sm"
+                      th:classappend="${
+                          user.roleName == 'User' ? 'role-user' :
+                          (user.roleName == 'Manager' ? 'role-manager' :
+                          (user.roleName == 'Product Manager' ? 'role-pm' :
+                          (user.roleName == 'Customer Support Representative' ? 'role-csr' :
+                          (user.roleName == 'Documentation Specialist' ? 'role-doc' :
+                          (user.roleName == 'No Role' ? 'role-none' : 'role-default')))))
+                      }"
+                      th:text="${user.roleName}">
+                </span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div th:if="${users == null or users.isEmpty()}" class="text-center py-5 text-muted">
+        <i class="bi bi-people" style="font-size: 3rem;"></i>
+        <p class="mt-2 fs-5 fw-semibold">No users found</p>
+    </div>
+
+</div>
+
+</body>
+</html>
