@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="navbar(activePage)">
+    <style>
+        .custom-nav-link {
+            color: rgba(255, 255, 255, 0.75) !important;
+            transition: color 0.3s ease;
+            font-size: 1.05rem;
+        }
+        .custom-nav-link:hover, .custom-nav-link.active {
+            color: #ffffff !important; /* Forces pure white on hover */
+            opacity: 1 !important;
+        }
+    </style>
+
+    <nav class="navbar navbar-expand-lg navbar-dark shadow mb-4" style="background-color: #111c38;">
+        <div class="container py-1">
+
+            <a class="navbar-brand fw-bolder text-white me-5" href="/tasks" style="letter-spacing: 0.5px;">
+                <i class="bi bi-kanban me-2" style="color: #a3b8e0;"></i>TaskManager
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto gap-4 align-items-center">
+                    <li class="nav-item">
+                        <a th:classappend="${activePage == 'tasks'} ? 'active fw-bold border-bottom border-light border-2 pb-1' : ''"
+                           class="nav-link custom-nav-link px-2" href="/tasks">
+                            <i class="bi bi-list-task me-1"></i>Tasks
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a th:classappend="${activePage == 'projects'} ? 'active fw-bold border-bottom border-light border-2 pb-1' : ''"
+                           class="nav-link custom-nav-link px-2" href="/projects">
+                            <i class="bi bi-folder2-open me-1"></i>Projects
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a th:classappend="${activePage == 'users'} ? 'active fw-bold border-bottom border-light border-2 pb-1' : ''"
+                           class="nav-link custom-nav-link px-2" href="/users">
+                            <i class="bi bi-people me-1"></i>Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a th:classappend="${activePage == 'categories'} ? 'active fw-bold border-bottom border-light border-2 pb-1' : ''"
+                           class="nav-link custom-nav-link px-2" href="/categories">
+                            <i class="bi bi-tags me-1"></i>Categories
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="d-flex align-items-center ms-auto">
+                    <a href="/notifications" class="btn position-relative rounded-pill px-4 text-white fw-bold border-0"
+                       style="background-color: rgba(255,255,255,0.15); transition: all 0.3s ease;"
+                       onmouseover="this.style.backgroundColor='rgba(255,255,255,0.25)'"
+                       onmouseout="this.style.backgroundColor='rgba(255,255,255,0.15)'">
+                        <i class="bi bi-bell-fill me-2"></i> Notifications
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+</div>
+
+</body>
+</html>
