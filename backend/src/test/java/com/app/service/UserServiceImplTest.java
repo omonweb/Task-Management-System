@@ -4,73 +4,81 @@ import com.app.dto.UserDTO;
 import com.app.dto.UserDetailsDTO;
 import com.app.entity.*;
 import com.app.exception.ResourceNotFoundException;
-import com.app.repository.ProjectRepository;
-import com.app.repository.TaskRepository;
-import com.app.repository.UserRepository;
-import com.app.repository.UserRolesRepository;
+import com.app.repository.*;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.TestPropertySource;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@Transactional
 public class UserServiceImplTest {
 
-    @Mock
+    // 1. Use @Autowired to bring in the REAL service and repositories
+    @Autowired
+    private UserService userService;
+
+    @Autowired
     private UserRepository userRepository;
 
-    @Mock
+    @Autowired
+    private UserRoleRepository userRoleRepository;
+
+    @Autowired
     private UserRolesRepository userRolesRepository;
 
-    @InjectMocks
-    private UserServiceImpl userService;
-
-    @Mock
+    @Autowired
     private ProjectRepository projectRepository;
 
-    @Mock
+    @Autowired
     private TaskRepository taskRepository;
 
     @Test
     public void testGetUsersFiltered_WhenUserExists() {
-
+        // ARRANGE
         User user = new User();
-        user.setUserId(1);
-        user.setUsername("john_doe");
+        user.setUserId(101); // <--- MANUALLY ASSIGN ID HERE
+        user.setUsername("integration_john");
         user.setEmail("john@email.com");
         user.setFullName("John Doe");
+        user.setPassword("dummyPassword");
+        User savedUser = userRepository.save(user);
 
         UserRole role = new UserRole();
+        role.setUserRoleId(101); // <--- MANUALLY ASSIGN ID HERE
         role.setRoleName("User");
+        UserRole savedRole = userRoleRepository.save(role);
+
+        UserRolesId bridgeId = new UserRolesId();
+        bridgeId.setUserId(savedUser.getUserId());
+        bridgeId.setUserRoleId(savedRole.getUserRoleId());
 
         UserRoles userRoles = new UserRoles();
-        userRoles.setUserRole(role);
+        userRoles.setId(bridgeId);
+        userRoles.setUser(savedUser);
+        userRoles.setUserRole(savedRole);
+        userRolesRepository.save(userRoles);
 
-        when(userRepository.findAll()).thenReturn(List.of(user));
-        when(userRolesRepository.findByUserUserId(1))
-                .thenReturn(List.of(userRoles));
+        // ACT
+        List<UserDTO> result = userService.getUsersFiltered("User", "integration_john");
 
-        List<UserDTO> result = userService.getUsersFiltered("User", "john");
-
-        assertEquals(1, result.size());
-        assertEquals("john_doe", result.get(0).getUsername());
+        // ASSERT
+        assertFalse(result.isEmpty(), "Result should not be empty");
+        assertEquals("integration_john", result.get(0).getUsername());
         assertEquals("User", result.get(0).getRoleName());
     }
 
     @Test
     public void testGetUsersFiltered_WhenNoUsersFound() {
-
-        when(userRepository.findAll()).thenReturn(List.of());
-
+        // ACT & ASSERT: Search for a completely random name that isn't in the DB
         ResourceNotFoundException exception = assertThrows(
                 ResourceNotFoundException.class,
-                () -> userService.getUsersFiltered("User", "xyz")
+                () -> userService.getUsersFiltered("User", "xyz_random_not_found")
         );
 
         assertEquals("No users found", exception.getMessage());
@@ -78,39 +86,48 @@ public class UserServiceImplTest {
 
     @Test
     public void testGetUserDetails_WhenUserExists() {
-
+        // ARRANGE
         User user = new User();
-        user.setUserId(1);
-        user.setUsername("john");
+        user.setUserId(102);
+        user.setUsername("integration_jane");
+        user.setPassword("dummyPassword");
 
-        when(userRepository.findById(1))
-                .thenReturn(java.util.Optional.of(user));
+        // --- ADD THESE TWO LINES ---
+        user.setEmail("jane@email.com");
+        user.setFullName("Jane Doe");
+        // ---------------------------
+
+        User savedUser = userRepository.save(user);
 
         Project project = new Project();
+        project.setProjectId(102);
         project.setProjectName("Project A");
+        projectRepository.save(project);
 
         Task task = new Task();
+        task.setTaskId(102);
         task.setTaskName("Task 1");
+        taskRepository.save(task);
 
-        when(projectRepository.findAll()).thenReturn(List.of(project));
-        when(taskRepository.findAll()).thenReturn(List.of(task));
+        // ACT
+        UserDetailsDTO result = userService.getUserDetails(savedUser.getUserId());
 
-        UserDetailsDTO result = userService.getUserDetails(1);
-
-        assertEquals("john", result.getUsername());
+        // ASSERT
+        assertNotNull(result);
+        assertEquals("integration_jane", result.getUsername());
     }
 
     @Test
     public void testGetUserDetails_WhenUserNotFound() {
+        // ARRANGE: Use an ID that will likely never exist
+        Integer fakeId = 9999999;
 
-        when(userRepository.findById(999))
-                .thenReturn(java.util.Optional.empty());
-
+        // ACT & ASSERT
         ResourceNotFoundException exception = assertThrows(
                 ResourceNotFoundException.class,
-                () -> userService.getUserDetails(999)
+                () -> userService.getUserDetails(fakeId)
         );
 
-        assertEquals("User not found with id: 999", exception.getMessage());
+        assertEquals("User not found with id: " + fakeId, exception.getMessage());
     }
 }
