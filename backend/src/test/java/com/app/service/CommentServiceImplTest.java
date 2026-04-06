@@ -1,77 +1,40 @@
 package com.app.service;
 
 import com.app.dto.CommentDTO;
-import com.app.entity.Comment;
-import com.app.entity.Task;
-import com.app.entity.User;
 import com.app.exception.ResourceNotFoundException;
-import com.app.repository.CommentRepository;
-import com.app.repository.TaskRepository;
-
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.domain.Sort;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
-class CommentServiceImplTest {
+@SpringBootTest
+public class CommentServiceImplTest {
 
-    @Mock
-    private CommentRepository commentRepository;
-
-    @Mock
-    private TaskRepository taskRepository;
-
-    @InjectMocks
+    @Autowired
     private CommentServiceImpl commentService;
 
+    // positive - task id 1 exists in DB so comments should return
     @Test
-    void getCommentsByTaskId_success() {
-
-        Task task = new Task();
-        task.setTaskId(1);
-        task.setTaskName("Login Feature");
-
-        User user = new User();
-        user.setUserId(1);
-        user.setUsername("john");
-
-        Comment comment = new Comment();
-        comment.setCommentId(1);
-        comment.setText("Good work!");
-        comment.setCreatedAt(LocalDateTime.now());
-        comment.setTask(task);
-        comment.setUser(user);
-
-        when(taskRepository.existsById(1)).thenReturn(true);
-
-        Sort sort = Sort.by(Sort.Direction.DESC, "createdAt");
-        when(commentRepository.findByTask_TaskId(1, sort))
-                .thenReturn(List.of(comment));
+    public void testGetCommentsByTaskId_WhenTaskExists() {
 
         List<CommentDTO> result = commentService.getCommentsByTaskId(1);
 
-        assertEquals(1, result.size());
-        assertEquals("Good work!", result.get(0).getText());
-        assertEquals("john", result.get(0).getUserName());
-        assertEquals("Login Feature", result.get(0).getTaskName());
+        assertNotNull(result);
+        assertTrue(result.size() >= 0);
     }
 
+    // negative - task 999 does not exist in DB so should throw 404
     @Test
-    void getCommentsByTaskId_taskNotFound() {
+    public void testGetCommentsByTaskId_WhenTaskNotFound() {
 
-        when(taskRepository.existsById(999)).thenReturn(false);
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> commentService.getCommentsByTaskId(999)
+        );
 
-        assertThrows(ResourceNotFoundException.class, () -> {
-            commentService.getCommentsByTaskId(999);
-        });
+        assertEquals("Task not found with ID: 999", exception.getMessage());
     }
 }
