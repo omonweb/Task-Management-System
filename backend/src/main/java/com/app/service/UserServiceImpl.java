@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDTO> getUsersFiltered(String role, String username) {
 
-        if (role != null && !role.matches("[a-zA-Z]+")) {
+        if (role != null && !role.matches("^[a-zA-Z\\s]+$")) {
             throw new IllegalArgumentException("Invalid role format");
         }
 
