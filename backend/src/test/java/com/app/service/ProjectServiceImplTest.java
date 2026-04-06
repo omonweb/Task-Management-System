@@ -32,7 +32,7 @@ class ProjectServiceImplTest {
     @Test
     void getAllProjects_ShouldThrowException_WhenEndDateIsBeforeStartDate() {
         LocalDate startDate = LocalDate.of(2022, 6, 1);
-        LocalDate endDate   = LocalDate.of(2022, 1, 1);
+        LocalDate endDate = LocalDate.of(2022, 1, 1);
         assertThrows(
                 IllegalArgumentException.class,
                 () -> projectService.getAllProjects(startDate, endDate)

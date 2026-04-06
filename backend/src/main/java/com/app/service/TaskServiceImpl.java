@@ -12,7 +12,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -82,4 +85,100 @@ public class TaskServiceImpl implements TaskService {
 
         return dto;
     }
+
+
+    /*
+    @Override
+    public List<TaskDTO> getCompletedTasks() {
+        // Ask for the data
+        List<Task> rawtask = taskRepository.findByStatusIgnoreCase("Completed");
+
+        //convert entity to dto
+        List<TaskDTO> tasks = new ArrayList<>();
+        for(Task task : rawtask) {
+            TaskDTO dto = new TaskDTO();
+            dto.setTaskId(task.getTaskId());
+            dto.setTaskName(task.getTaskName());
+            dto.setStatus(task.getStatus());
+            tasks.add(dto);
+        }
+
+        return tasks;
+    }
+
+    @Override
+    public List<TaskDTO> getTaskbyUser(Integer id) {
+        //get raw data
+        List<Task> tasks = taskRepository.findByUser_UserId(id);
+
+        //map entity to dto
+
+//          List<TaskDTO> result = new ArrayList<>();
+//        for(Task task : tasks) {
+//            TaskDTO dto = new TaskDTO();
+//            dto.setStatus(task.getStatus());
+//            dto.setUserName(task.getUser().getUsername());
+//            dto.setTaskName(task.getTaskName());
+//            dto.setTaskId(task.getTaskId());
+//            result.add(dto);
+//        }
+
+        return tasks.stream()
+                .map(task -> modelMapper.map(task, TaskDTO.class))
+                .toList();
+
+        // return result;
+    }
+
+    @Override
+    public List<TaskDTO> getTasksbyKeyword(String taskName) {
+        List<Task> tasks = taskRepository.findByTaskNameContainsIgnoreCase(taskName);
+
+        //map to dto
+
+        return tasks.stream()
+                .map(task -> modelMapper.map(task,TaskDTO.class))
+                .toList();
+    }
+
+    @Override
+    public List<Object[]> getTaskStatusCounts() {
+
+        // 1. Get raw data from the pantry
+        List<Object[]> rawData = taskRepository.countTasksGroupedByStatus();
+
+        return rawData;
+        /*
+        // 2. Prepare our clean Map (Dictionary)
+        Map<String, Long> statusCounts = new HashMap<>();
+
+        // 3. Loop through the raw rows and put them in the map
+        for (Object[] row : rawData) {
+            String status = (String) row[0]; // The first column is the status
+            Long count = (Long) row[1];      // The second column is the count
+
+            statusCounts.put(status, count);
+        }
+
+        return statusCounts;
+    }
+    @Override
+    public List<Object[]> getTaskPriorityCounts() {
+        List<Object[]> raws = taskRepository.countTasksGroupedByPriority();
+
+        return raws;
+    }
+
+    @Override
+    public Map<String, Long> getTaskProjectCounts(){
+        List<Object[]> rawData = taskRepository.countTasksGroupedByProjects();
+
+        HashMap<String,Long> counts = new HashMap<>();
+
+        for(Object[] row : rawData) {
+            counts.put((String)row[0],(Long)row[1]);
+        }
+        return counts;
+    }
+*/
 }

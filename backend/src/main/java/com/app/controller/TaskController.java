@@ -36,4 +36,50 @@ public class TaskController {
         TaskDetailsDTO taskDetails = taskService.getTaskById(id);
         return ResponseEntity.ok(taskDetails);
     }
+    /*
+
+    @GetMapping("/complete")
+    public ResponseEntity<List<TaskDTO>> getCompletedTasks() {
+        List<TaskDTO> task = taskService.getCompletedTasks();
+        return ResponseEntity.ok(task);
+    }
+
+    @GetMapping("/user/{id}")
+    public ResponseEntity<List<TaskDTO>> getTasksbyUser(
+            @PathVariable Integer id) {
+        List<TaskDTO> tasks = taskService.getTaskbyUser(id);
+
+        return ResponseEntity.ok(tasks);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<TaskDTO>> getTasksbyKeyword(
+            @RequestParam String taskName) {
+        List<TaskDTO> tasks = taskService.getTasksbyKeyword(taskName);
+
+        return ResponseEntity.ok(tasks);
+    }
+
+    @GetMapping("/status/counts")
+    public ResponseEntity<List<Object[]>> getCounts() {
+        List<Object[]> result = taskService.getTaskStatusCounts() ;
+
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/priority/counts")
+    public ResponseEntity<List<Object[]>> getCountsByPriority() {
+        List<Object[]> result = taskService.getTaskPriorityCounts();
+
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/project/counts")
+    public ResponseEntity<Map<String,Long>> getCountsByProjects() {
+        Map<String , Long> result = taskService.getTaskProjectCounts();
+
+        return ResponseEntity.ok(result);
+    }*/
 }
+
+/// api/tasks/user/5
