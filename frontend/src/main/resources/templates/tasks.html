@@ -150,8 +150,11 @@
                 <option value="">All Statuses</option>
                 <option value="Pending" th:selected="${selectedStatus == 'Pending'}">Pending</option>
                 <option value="Completed" th:selected="${selectedStatus == 'Completed'}">Completed</option>
+                <option value="In Progress" th:selected="${selectedStatus == 'In Progress'}">In Progress</option>
             </select>
         </div>
+        <input type="hidden" name="size" th:value="${currentSize}" />
+
         <div class="col-md-2 d-flex align-items-end">
             <button type="submit" class="btn text-white w-100 shadow-sm" style="background-color: #64748b;">
                 <i class="bi bi-funnel me-1"></i> Filter
@@ -206,22 +209,24 @@
 
     <nav class="mt-5" th:if="${totalPages > 1}">
         <ul class="pagination justify-content-center shadow-sm d-inline-flex rounded-3" style="background-color: white; padding: 5px;">
+
             <li class="page-item" th:classappend="${isFirst ? 'disabled' : ''}">
-                <a class="page-link border-0" th:href="@{/tasks(page=${currentPage - 1}, priority=${selectedPriority}, status=${selectedStatus})}">
+                <a class="page-link border-0" th:href="@{/tasks(page=${currentPage - 1}, size=${currentSize}, priority=${selectedPriority}, status=${selectedStatus})}">
                     <i class="bi bi-chevron-left"></i>
                 </a>
             </li>
 
             <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
                 th:classappend="${currentPage == i ? 'active' : ''}">
-                <a class="page-link border-0 fw-bold" th:href="@{/tasks(page=${i}, priority=${selectedPriority}, status=${selectedStatus})}" th:text="${i + 1}"></a>
+                <a class="page-link border-0 fw-bold" th:href="@{/tasks(page=${i}, size=${currentSize}, priority=${selectedPriority}, status=${selectedStatus})}" th:text="${i + 1}"></a>
             </li>
 
             <li class="page-item" th:classappend="${isLast ? 'disabled' : ''}">
-                <a class="page-link border-0" th:href="@{/tasks(page=${currentPage + 1}, priority=${selectedPriority}, status=${selectedStatus})}">
+                <a class="page-link border-0" th:href="@{/tasks(page=${currentPage + 1}, size=${currentSize}, priority=${selectedPriority}, status=${selectedStatus})}">
                     <i class="bi bi-chevron-right"></i>
                 </a>
             </li>
+
         </ul>
     </nav>
 </div>

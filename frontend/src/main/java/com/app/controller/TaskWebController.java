@@ -20,7 +20,7 @@ public class TaskWebController {
             @RequestParam(required = false) String priority,
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "10") int size, // This is the size we need to remember
             Model model) {
 
         PaginatedResponse<TaskDTO> response = taskClientService.fetchTasks(priority, status, page, size);
@@ -31,9 +31,11 @@ public class TaskWebController {
         model.addAttribute("isFirst", response.isFirst());
         model.addAttribute("isLast", response.isLast());
 
-        // Pass the selected filters back to the view to maintain form state
         model.addAttribute("selectedPriority", priority);
         model.addAttribute("selectedStatus", status);
+
+        // NEW: Pass the current size to the view
+        model.addAttribute("currentSize", size);
 
         return "tasks";
     }
